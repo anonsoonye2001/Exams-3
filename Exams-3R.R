@@ -17,7 +17,7 @@ a
 
 
 #2. Sort the data by ‘transect.id’ and then for each by ‘dateTime’ so that the last observation is the last one in time.
-#This will be done in ascending ordre
+#This will be done in ascending order
 b <- arrange(d, transect.id, dateTime)
 b
 
@@ -88,22 +88,28 @@ study.fxn <- function(x){
 #6. Assign the correct 'study' type using this function in a ‘for loop'. (5 points)
 d$study = NA
 
+start <- proc.time()
+
 for(i in 1:nrow(d)){
   #get the 'ith" row, from 1 to the end of data frame "d" (i.e., 503441)
-  d$study[i] <- study.fxn(x = d$transect.id[i]) 
+  d[i,]$study <- study.fxn(x = d[i,]) #apply the function to the input row of data
 }
 
 
+time <- proc.time() - start; print(time)
 
 
 #7. Assign the correct 'study' type using this function in 'apply' function. (5 points)
-d$s = NA
-d$s <- apply(X = d, 1, FUN = study.fxn)
+d$study = NA
+
+start <- proc.time()
+d$study <- apply(X = d, 1, FUN = study.fxn)
+
+time <- proc.time() - start; print(time)
 
 unique(d$study)
-unique(d$s)
 
-d$study_fac<- factor(x = d$s, levels = c("spatial","eddy","lagrangian"),
+d$study_fac<- factor(x = d$study, levels = c("spatial","eddy","lagrangian"),
                      labels = c("Spatial","Eddy","Lagrangian"))
 
 
@@ -114,6 +120,12 @@ p <-ggplot(data = d, aes(x = pressure)) +
   geom_histogram(binwidth = 5, color="black", fill="white") + 
   facet_wrap(.~region_fac)
 p #plot the plot.
+
+
+q <-ggplot(data = d, aes(x = pressure)) +
+  geom_histogram(binwidth = 5, color="black", fill="white") + 
+  facet_wrap(.~study_fac)
+q #plot the plot.
 
 
 
@@ -131,46 +143,37 @@ w
 #10. Using a 'for loop', convert the standard deviation of water temperature (currently in Celsius) to
 #degrees Fahrenheit and Kelvin. (5 points)
 
+sd1.tempC = sd(d[d$tow=='s',"temp"], na.rm = T)
+sd2.tempC = sd(d[d$tow=='m',"temp"], na.rm =T)
 
-mean_sd1$f_deg = NA
-mean_sd1()$K_deg = NA
-mean_sd2$f_deg = NA
-mean_sd2$K_deg = NA
-
-for(i in 1:nrow(mean_sd1)){
-  mean_sd1[i,]$f_deg = (mean_sd1[i,]$sd + 32)*(5/9)
-  mean_sd1[i,]$K_deg = (mean_sd1[i,]$sd + 273.15)
-}
-
-for(i in 1:nrow(mean_sd2)){
-  mean_sd2[i,]$f_deg = (mean_sd2[i,]$sd + 32)*(5/9)
-  mean_sd2[i,]$K_deg = (mean_sd2[i,]$sd + 273.15)
-}
-
-
-sd1.tempC$tempF <- NA
-sd1.tempC$tempK <- NA
-sd2.tempC$tempF <- NA
-sd2.tempC$tempK <- NA
+w$tempF <- NA
+w$tempK <- NA
 
 for(i in 1:nrow(w)){
   
-  w[i,]$tempF <- w[i,]$sd.tempC * (9/5) + 32
-  w[i,]$tempK <- w[i,]$sd.tempC + 273.15
+  w[i,]$tempF <- w[i,]$sd1.tempC * (9/5) + 32
+  w[i,]$tempK <- w[i,]$sd1.tempC + 273.15
   
 }
 
 
-#11. Melt the data. Keep “region” and “tow’ as the id.variables. (5 points)
-wm <- melt(data =w , id.vars = c("region","tow"),measure.vars = c("tempF","tempK"))
+for(i in 1:nrow(w)){
+  
+  w[i,]$tempF <- w[i,]$sd2.tempC * (9/5) + 32
+  w[i,]$tempK <- w[i,]$sd2.tempC + 273.15
+  
+}
 
+#11. Melt the data. Keep “region” and “tow’ as the id.variables. (5 points)
 library(reshape2)
+
+measure.vars=c("tempF","tempK")
 m.vars=c("temp")
 id.vars = c("region","tow")
-dm <- melt(d, id.vars=id.vars, measure.vars=m.vars)
+dm <- melt(d, id.vars=id.vars, measure.vars=c("temp"))
 
-Melt1 = melt(mean_sd1, id.vars=c("region","tow"), measure.vars=m.vars)
-Melt2 = melt(mean_sd2, id.vars=c("region","tow"), measure.vars=m.vars)
+Melt1 = melt(sd1.tempC, id.vars=c("region","tow"), measure.vars=m.vars)
+Melt2 = melt(sd2.tempC, id.vars=c("region","tow"), measure.vars=m.vars)
 
 #12. Generate a bar plots showing the 2 standard deviation temperatures in Celsius, Fahrenheit, and
 #Kelvin degrees. (5 points)
