@@ -119,13 +119,13 @@ d$study_fac<- factor(x = d$study, levels = c("spatial","eddy","lagrangian"),
 p <-ggplot(data = d, aes(x = pressure)) +
   geom_histogram(binwidth = 5, color="black", fill="white") + 
   facet_wrap(.~region_fac)
-p #plot the plot.
+p #plot the plot based on region
 
 
 q <-ggplot(data = d, aes(x = pressure)) +
   geom_histogram(binwidth = 5, color="black", fill="white") + 
   facet_wrap(.~study_fac)
-q #plot the plot.
+q #plot the plot based on study
 
 
 
@@ -167,10 +167,12 @@ for(i in 1:nrow(w)){
 #11. Melt the data. Keep “region” and “tow’ as the id.variables. (5 points)
 library(reshape2)
 
-measure.vars=c("tempF","tempK")
 m.vars=c("temp")
+measure.vars=c("tempF","tempK")
 id.vars = c("region","tow")
-dm <- melt(d, id.vars=id.vars, measure.vars=c("temp"))
+
+dm <- melt(d, id.vars=id.vars, measure.vars=m.vars)
+
 
 Melt1 = melt(sd1.tempC, id.vars=c("region","tow"), measure.vars=m.vars)
 Melt2 = melt(sd2.tempC, id.vars=c("region","tow"), measure.vars=m.vars)
